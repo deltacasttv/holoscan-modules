@@ -1,0 +1,29 @@
+# CMake build artifacts
+build/
+.cmake/
+
+# HoloHub CLI tools (auto-downloaded by the holohub wrapper on first run)
+.holohub/
+
+# Container HOME-mapped junk (dev container sets HOME=/workspace/deltacast)
+.local/
+.cupy/
+.cache/
+.bash_history
+.python_history
+.ngc/
+.nv/
+
+# Fetched test data (downloaded by the endoscopy_data CMake target)
+data/
+
+# Python packaging artifacts
+dist/
+*.egg-info/
+__pycache__/
+*.py[cod]
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp

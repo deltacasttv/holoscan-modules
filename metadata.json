@@ -1,0 +1,39 @@
+{
+  "$schema": "holoscan/module/v2",
+  "module": {
+    "name": "holoscan-deltacast",
+    "version": "0.1.0",
+    "description": "Holoscan components for using the Deltacast Videomaster capture card",
+    "authors": [
+      {
+        "name": "Deltacast Team",
+        "affiliation": "Deltacast"
+      },
+      {
+        "name": "Holoscan Team",
+        "affiliation": "NVIDIA"
+      }
+    ],
+    "license": "Apache-2.0",
+    "language": ["C++", "Python"],
+    "namespace": {
+      "cpp": "holoscan::ops",
+      "python": "holoscan.deltacast"
+    },
+    "holoscan_sdk": {
+      "minimum_required_version": "4.2.0",
+      "tested_versions": ["4.2.0"]
+    },
+    "platforms": ["x86_64", "aarch64"],
+    "tags": ["Video", "Deltacast", "Camera", "RDMA", "GPUDirect", "SDI", "HDMI"],
+    "source_repository": "https://github.com/deltacasttv/holoscan-deltacast",
+    "binary_packages": {
+      "debian": "holoscan-deltacast",
+      "pypi": "holoscan-deltacast"
+    },
+    "testing": {
+      "cpp": "ctest",
+      "python": "pytest"
+    }
+  }
+}
