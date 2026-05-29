@@ -96,6 +96,11 @@ void VideoMasterSourceOp::compute(InputContext& op_input, OutputContext& op_outp
                                                               _progressive,
                                                               _framerate};
     if (_video_master_base->video_format != config_video_format) {
+      HOLOSCAN_LOG_INFO(
+          "Input signal format {}x{}@{} does not match configured format {}x{}@{}, exiting",
+          _video_master_base->video_format.width, _video_master_base->video_format.height,
+          _video_master_base->video_format.framerate, config_video_format.width,
+          config_video_format.height, config_video_format.framerate);
       VHD_StopStream(*_video_master_base->stream_handle());
       throw std::runtime_error("Input signal does not match configuration");
     }
