@@ -78,9 +78,18 @@ operator and sample apps build and run without a Deltacast card.
 
 | Where | What |
 |---|---|
-| `cmake/FindVideoMasterHD.cmake` | `find_package(VideoMasterHD)` shim. Default `option(VIDEOMASTER_USE_MOCK ON)`; flip with `-DVIDEOMASTER_USE_MOCK=OFF` and `-DVideoMaster_SDK_DIR=<path>` to link the real SDK. |
+| `cmake/FindVideoMasterHD.cmake` | `find_package(VideoMasterHD)` shim. Default `option(VIDEOMASTER_USE_MOCK ON)`; flip with `-DVIDEOMASTER_USE_MOCK=OFF` and `-DVIDEOMASTER_SDK_DIR=<path>` to link the real SDK. |
 | `cmake/mock/VideoMasterHD/include/VideoMasterHD_*.h` | Header declarations covering Core, ApplicationBuffers, Sdi, Dv, Keyer, String. |
 | `cmake/mock/VideoMasterHD/src/mock_sdk.cpp` | Stateful implementation. RX (`VHD_WaitSlotFilled`) paints an animated RGBA gradient into the slot buffer and paces to the configured framerate; TX (`VHD_WaitSlotSent`) accepts queued slots silently. |
+
+`VIDEOMASTER_SDK_DIR` is optional. If set, it is tried first; otherwise CMake falls back to global config locations and then classic system paths.
+
+Detection order:
+
+1. `${VIDEOMASTER_SDK_DIR}` direct layout (`lib` + `headers`), then `${VIDEOMASTER_SDK_DIR}/VideoMasterHDConfig.cmake` or `${VIDEOMASTER_SDK_DIR}/cmake/VideoMasterHDConfig.cmake`
+2. `/usr/local/cmake/VideoMasterHDConfig.cmake`
+3. `/usr/share/deltacast/videomaster/cmake/VideoMasterHDConfig.cmake`
+4. `/usr/lib/libvideomasterhd.so` + `/usr/include/videomaster`
 
 The mock makes `find_package(VideoMasterHD)` succeed for both this module and
 the `VideoMasterAPIHelper` FetchContent (which calls
@@ -93,7 +102,7 @@ To verify against real hardware later:
 ```bash
 cmake -S . -B build-real \
     -DBUILD_ALL=ON \
-    -DVideoMaster_SDK_DIR=/path/to/videomaster-sdk \
+    -DVIDEOMASTER_SDK_DIR=/path/to/videomaster-sdk \
     -DVIDEOMASTER_USE_MOCK=OFF
 ```
 

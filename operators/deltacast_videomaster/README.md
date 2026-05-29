@@ -52,7 +52,9 @@ The following parameters can be configured for this operator:
 
 ## Building the operator
 
-See [Building from Source](../../README.md#building-from-source) in the top-level README. The mock VideoMaster SDK is linked by default; pass `-DVIDEOMASTER_USE_MOCK=OFF -DVideoMaster_SDK_DIR=<path>` to link against the real SDK.
+See [Building from Source](../../README.md#building-from-source) in the top-level README. The mock VideoMaster SDK is linked by default; pass `-DVIDEOMASTER_USE_MOCK=OFF -DVIDEOMASTER_SDK_DIR=<path>` to link against the real SDK.
+
+`VIDEOMASTER_SDK_DIR` is optional. Use it only when the SDK is installed in a non-default location. For the full SDK detection order and examples, see the top-level [DELTACAST.TV VideoMaster SDK](../../README.md#deltacasttv-videomaster-sdk) section.
 
 ## Tests
 

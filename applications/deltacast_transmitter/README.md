@@ -45,8 +45,10 @@ See [Building from Source](../../README.md#building-from-source) in the top-leve
 
 ```bash
 ./holohub build --local deltacast_transmitter \
-    --configure-args="-DVIDEOMASTER_USE_MOCK=OFF -DVideoMaster_SDK_DIR=<path to VideoMaster SDK>"
+   --configure-args="-DVIDEOMASTER_USE_MOCK=OFF -DVIDEOMASTER_SDK_DIR=<path to VideoMaster SDK>"
 ```
+
+`VIDEOMASTER_SDK_DIR` is optional. Use it only when the SDK is installed in a non-default location. For the full SDK detection order and examples, see the top-level [DELTACAST.TV VideoMaster SDK](../../README.md#deltacasttv-videomaster-sdk) section.
 
 ## Run
 

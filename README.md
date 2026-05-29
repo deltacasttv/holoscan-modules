@@ -116,7 +116,32 @@ The Deltacast VideoMaster SDK is required to build and run on DELTACAST.TV captu
 This project bundles a *mock library* to satisfy minimum build and testing
 features (animated RGBA gradient for RX, silent accept for TX) in environments without capture card hardware.
 
-Use the real SDK by passing `-DVideoMaster_SDK_DIR=<path> -DVIDEOMASTER_USE_MOCK=OFF`.
+Use the real SDK by passing `-DVIDEOMASTER_SDK_DIR=<path> -DVIDEOMASTER_USE_MOCK=OFF`.
+
+`VIDEOMASTER_SDK_DIR` is optional.
+
+When it is set, it has top priority. The build system tries, in order:
+
+1. `${VIDEOMASTER_SDK_DIR}/lib` + `${VIDEOMASTER_SDK_DIR}/headers`
+2. `${VIDEOMASTER_SDK_DIR}/VideoMasterHDConfig.cmake` or `${VIDEOMASTER_SDK_DIR}/cmake/VideoMasterHDConfig.cmake`
+
+If `VIDEOMASTER_SDK_DIR` is not set (or if detection from it fails), it falls back to:
+
+1. `/usr/local/cmake/VideoMasterHDConfig.cmake`
+2. `/usr/share/deltacast/videomaster/cmake/VideoMasterHDConfig.cmake`
+3. `/usr/lib/libvideomasterhd.so` + headers in `/usr/include/videomaster`
+
+Example custom SDK layout:
+
+```
+path/to/VideoMasterSDK/
+|- headers/
+|  |- VideoMasterHD_Core.h
+|- lib/
+   |- libvideomasterhd.so
+```
+
+In that case, set `VIDEOMASTER_SDK_DIR=path/to/VideoMasterSDK`.
 
 ---
 
