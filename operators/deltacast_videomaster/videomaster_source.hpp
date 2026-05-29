@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "holoscan/holoscan.hpp"
-
 #include "videomaster_base.hpp"
 
 namespace holoscan::ops {
@@ -47,8 +46,8 @@ class VideoMasterSourceOp : public holoscan::Operator {
   void stop() override;
 
  private:
-  void transmit_buffer_data(void* buffer, uint32_t buffer_size,
-                            OutputContext& op_output, ExecutionContext& context);
+  void transmit_buffer_data(void* buffer, uint32_t buffer_size, OutputContext& op_output,
+                            ExecutionContext& context);
 
   Parameter<holoscan::IOSpec*> _signal;
   Parameter<bool> _use_rdma;

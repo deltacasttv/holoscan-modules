@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../videomaster_source.hpp"
-#include "../videomaster_transmitter.hpp"
-#include "videomaster_pydoc.hpp"
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <cstdint>
-#include <memory>
-#include <string>
-
 #include <holoscan/core/condition.hpp>
 #include <holoscan/core/fragment.hpp>
 #include <holoscan/core/operator.hpp>
 #include <holoscan/core/resource.hpp>
+#include <memory>
+#include <string>
+
+#include "../videomaster_source.hpp"
+#include "../videomaster_transmitter.hpp"
+#include "videomaster_pydoc.hpp"
 
 using std::string_literals::operator""s;
 using pybind11::literals::operator""_a;
@@ -70,17 +69,11 @@ class PyVideoMasterSourceOp : public VideoMasterSourceOp {
   // Define a constructor that fully initializes the object.
   PyVideoMasterSourceOp(Fragment* fragment, const py::args& args, bool rdma = false,
                         uint32_t board = 0, uint32_t input = 0, uint32_t width = 1920,
-                        uint32_t height = 1080, bool progressive = true,
-                        uint32_t framerate = 60,
+                        uint32_t height = 1080, bool progressive = true, uint32_t framerate = 60,
                         const std::string& name = "videomaster_source")
-      : VideoMasterSourceOp(ArgList{
-            Arg{"rdma", rdma},
-            Arg{"board", board},
-            Arg{"input", input},
-            Arg{"width", width},
-            Arg{"height", height},
-            Arg{"progressive", progressive},
-            Arg{"framerate", framerate}}) {
+      : VideoMasterSourceOp(ArgList{Arg{"rdma", rdma}, Arg{"board", board}, Arg{"input", input},
+                                    Arg{"width", width}, Arg{"height", height},
+                                    Arg{"progressive", progressive}, Arg{"framerate", framerate}}) {
     add_positional_condition_and_resource_args(this, args);
     name_ = name;
     fragment_ = fragment;
@@ -98,17 +91,12 @@ class PyVideoMasterTransmitterOp : public VideoMasterTransmitterOp {
   PyVideoMasterTransmitterOp(Fragment* fragment, const py::args& args, bool rdma = false,
                              uint32_t board = 0, uint32_t output = 0, uint32_t width = 1920,
                              uint32_t height = 1080, bool progressive = true,
-                             uint32_t framerate = 60,
-                             bool enable_overlay = false,
+                             uint32_t framerate = 60, bool enable_overlay = false,
                              const std::string& name = "videomaster_transmitter")
-      : VideoMasterTransmitterOp(ArgList{Arg{"rdma", rdma},
-                                         Arg{"board", board},
-                                         Arg{"output", output},
-                                         Arg{"width", width},
-                                         Arg{"height", height},
-                                         Arg{"progressive", progressive},
-                                         Arg{"framerate", framerate},
-                                         Arg{"enable_overlay", enable_overlay}}) {
+      : VideoMasterTransmitterOp(
+            ArgList{Arg{"rdma", rdma}, Arg{"board", board}, Arg{"output", output},
+                    Arg{"width", width}, Arg{"height", height}, Arg{"progressive", progressive},
+                    Arg{"framerate", framerate}, Arg{"enable_overlay", enable_overlay}}) {
     add_positional_condition_and_resource_args(this, args);
     name_ = name;
     fragment_ = fragment;
@@ -126,67 +114,30 @@ PYBIND11_MODULE(_videomaster, m) {
          .. currentmodule:: _videomaster
      )pbdoc";
 
-  py::class_<VideoMasterSourceOp,
-             PyVideoMasterSourceOp,
-             Operator,
+  py::class_<VideoMasterSourceOp, PyVideoMasterSourceOp, Operator,
              std::shared_ptr<VideoMasterSourceOp>>(
       m, "VideoMasterSourceOp", doc::VideoMasterSourceOp::doc_VideoMasterSourceOp)
-      .def(py::init<Fragment*,
-                    const py::args&,
-                    bool,
-                    uint32_t,
-                    uint32_t,
-                    uint32_t,
-                    uint32_t,
-                    bool,
-                    uint32_t,
-                    const std::string&>(),
-           "fragment"_a,
-           "rdma"_a = false,
-           "board"_a = "0"s,
-           "input"_a = "0"s,
-           "width"_a = "0"s,
-           "height"_a = "0"s,
-           "progressive"_a = true,
-           "framerate"_a = "60"s,
+      .def(py::init<Fragment*, const py::args&, bool, uint32_t, uint32_t, uint32_t, uint32_t, bool,
+                    uint32_t, const std::string&>(),
+           "fragment"_a, "rdma"_a = false, "board"_a = "0"s, "input"_a = "0"s, "width"_a = "0"s,
+           "height"_a = "0"s, "progressive"_a = true, "framerate"_a = "60"s,
            "name"_a = "videomaster_source"s,
            doc::VideoMasterSourceOp::doc_VideoMasterSourceOp_python)
       .def("initialize", &VideoMasterSourceOp::initialize, doc::VideoMasterSourceOp::doc_initialize)
       .def("setup", &VideoMasterSourceOp::setup, "spec"_a, doc::VideoMasterSourceOp::doc_setup);
 
-  py::class_<VideoMasterTransmitterOp,
-             PyVideoMasterTransmitterOp,
-             Operator,
+  py::class_<VideoMasterTransmitterOp, PyVideoMasterTransmitterOp, Operator,
              std::shared_ptr<VideoMasterTransmitterOp>>(
       m, "VideoMasterTransmitterOp", doc::VideoMasterTransmitterOp::doc_VideoMasterTransmitterOp)
-      .def(py::init<Fragment*,
-                    const py::args&,
-                    bool,
-                    uint32_t,
-                    uint32_t,
-                    uint32_t,
-                    uint32_t,
-                    bool,
-                    uint32_t,
-                    bool,
-                    const std::string&>(),
-           "fragment"_a,
-           "rdma"_a = false,
-           "board"_a = "0"s,
-           "output"_a = "0"s,
-           "width"_a = "0"s,
-           "height"_a = "0"s,
-           "progressive"_a = true,
-           "framerate"_a = "60"s,
-           "enable_overlay"_a = false,
-           "name"_a = "videomaster_transmitter"s,
+      .def(py::init<Fragment*, const py::args&, bool, uint32_t, uint32_t, uint32_t, uint32_t, bool,
+                    uint32_t, bool, const std::string&>(),
+           "fragment"_a, "rdma"_a = false, "board"_a = "0"s, "output"_a = "0"s, "width"_a = "0"s,
+           "height"_a = "0"s, "progressive"_a = true, "framerate"_a = "60"s,
+           "enable_overlay"_a = false, "name"_a = "videomaster_transmitter"s,
            doc::VideoMasterTransmitterOp::doc_VideoMasterTransmitterOp)
-      .def("initialize",
-           &VideoMasterTransmitterOp::initialize,
+      .def("initialize", &VideoMasterTransmitterOp::initialize,
            doc::VideoMasterTransmitterOp::doc_initialize)
-      .def("setup",
-           &VideoMasterTransmitterOp::setup,
-           "spec"_a,
+      .def("setup", &VideoMasterTransmitterOp::setup, "spec"_a,
            doc::VideoMasterTransmitterOp::doc_setup);
 }  // PYBIND11_MODULE NOLINT
 }  // namespace holoscan::ops

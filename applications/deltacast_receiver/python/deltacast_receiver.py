@@ -21,6 +21,7 @@ from argparse import ArgumentParser
 # Splice the build-tree holoscan/ into holoscan.__path__ so
 # `import holoscan.deltacast` resolves.
 import holoscan
+
 _build_holoscan_path = os.path.join(os.environ.get("HOLOSCAN_DELTACAST_BUILD_DIR",''), "python", "holoscan")
 holoscan.__path__.insert(0, _build_holoscan_path)
 

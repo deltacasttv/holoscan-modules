@@ -43,20 +43,6 @@ if(NOT DEFINED BUILD_ALL)
     endif()
 endif()
 
-# Module tests live behind a module-namespaced flag rather than the standard
-# CMake BUILD_TESTING variable. This lets a parent project (HoloHub, another
-# module) keep its own BUILD_TESTING setting independent of whether *this*
-# module's tests are built. Defaults ON when standalone, OFF when nested.
-if(NOT DEFINED HOLOSCAN_DELTACAST_BUILD_TESTING)
-    if(PROJECT_IS_TOP_LEVEL)
-        set(HOLOSCAN_DELTACAST_BUILD_TESTING ON
-            CACHE BOOL "Build the holoscan-deltacast module's CTest and pytest suites")
-    else()
-        set(HOLOSCAN_DELTACAST_BUILD_TESTING OFF
-            CACHE BOOL "Build the holoscan-deltacast module's CTest and pytest suites")
-    endif()
-endif()
-
 # ---------------------------------------------------------------------------
 # Python package root in the build tree.
 # PYTHONPATH=${HOLOSCAN_DELTACAST_PYTHON_ROOT} lets Python find

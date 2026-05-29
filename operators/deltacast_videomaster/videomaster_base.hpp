@@ -21,11 +21,10 @@
 #include <string>
 #include <vector>
 
-#include "holoscan/holoscan.hpp"
-
-#include "VideoMasterHD_Core.h"
-#include "VideoMasterAPIHelper/handle_manager.hpp"
 #include "VideoMasterAPIHelper/VideoInformation/core.hpp"
+#include "VideoMasterAPIHelper/handle_manager.hpp"
+#include "VideoMasterHD_Core.h"
+#include "holoscan/holoscan.hpp"
 
 namespace holoscan::ops {
 
@@ -42,8 +41,7 @@ class VideoMasterBase {
   bool configure_stream();
   bool init_buffers();
   bool start_stream();
-  bool holoscan_log_on_error(Deltacast::Helper::ApiSuccess result,
-                             const std::string& message);
+  bool holoscan_log_on_error(Deltacast::Helper::ApiSuccess result, const std::string& message);
   void stop_stream();
   bool signal_present();
   bool set_loopback_state(bool state);
