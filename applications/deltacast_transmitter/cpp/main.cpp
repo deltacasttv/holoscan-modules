@@ -15,19 +15,17 @@
  * limitations under the License.
  */
 
-#include <holoscan/holoscan.hpp>
-#include <holoscan/operators/video_stream_replayer/video_stream_replayer.hpp>
-#include <holoscan/operators/format_converter/format_converter.hpp>
-#include <videomaster_transmitter.hpp>
-
 #include <getopt.h>
+
+#include <holoscan/holoscan.hpp>
+#include <holoscan/operators/format_converter/format_converter.hpp>
+#include <holoscan/operators/video_stream_replayer/video_stream_replayer.hpp>
+#include <videomaster_transmitter.hpp>
 
 class App : public holoscan::Application {
  public:
   /** Sets the path to the data directory */
-  void set_datapath(const std::string& path) {
-     datapath = path;
-  }
+  void set_datapath(const std::string& path) { datapath = path; }
 
   /** Compose function */
   void compose() override {
@@ -41,15 +39,13 @@ class App : public holoscan::Application {
     auto source = make_operator<ops::VideoStreamReplayerOp>("replayer", from_config("replayer"),
                                                             Arg("directory", datapath));
 
-    auto format_converter =
-        make_operator<ops::FormatConverterOp>("format_converter",
-                                              from_config("output_format_converter"),
-                                              Arg("pool") = make_resource<BlockMemoryPool>(
-                                                  "pool", 1, source_block_size, source_num_blocks));
+    auto format_converter = make_operator<ops::FormatConverterOp>(
+        "format_converter", from_config("output_format_converter"),
+        Arg("pool") =
+            make_resource<BlockMemoryPool>("pool", 1, source_block_size, source_num_blocks));
 
-    auto visualizer = make_operator<ops::VideoMasterTransmitterOp>(
-        "deltacast",
-        from_config("deltacast"));
+    auto visualizer =
+        make_operator<ops::VideoMasterTransmitterOp>("deltacast", from_config("deltacast"));
 
     add_flow(source, format_converter);
     add_flow(format_converter, visualizer);
@@ -61,13 +57,9 @@ class App : public holoscan::Application {
 
 /** Helper function to parse the command line arguments */
 bool parse_arguments(int argc, char** argv, std::string& config_name, std::string& data_path) {
-  static struct option long_options[] = {
-      {"data",    required_argument, 0,  'd' },
-      {0,         0,                 0,  0 }
-  };
+  static struct option long_options[] = {{"data", required_argument, 0, 'd'}, {0, 0, 0, 0}};
 
-  while (int c = getopt_long(argc, argv, "d",
-                   long_options, NULL))  {
+  while (int c = getopt_long(argc, argv, "d", long_options, NULL)) {
     if (c == -1 || c == '?') break;
 
     switch (c) {

@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "holoscan/core/operator.hpp"
-
 #include "videomaster_base.hpp"
 
 namespace holoscan::ops {

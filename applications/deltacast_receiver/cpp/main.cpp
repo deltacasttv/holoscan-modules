@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
+#include <getopt.h>
+
 #include <holoscan/holoscan.hpp>
 #include <holoscan/operators/format_converter/format_converter.hpp>
 #include <holoscan/operators/holoviz/holoviz.hpp>
 #include <videomaster_source.hpp>
-
-#include <getopt.h>
 
 class App : public holoscan::Application {
  public:
@@ -36,32 +36,26 @@ class App : public holoscan::Application {
 
     // Create the VideoMaster source operator (receiver) with explicit arguments
     auto source = make_operator<ops::VideoMasterSourceOp>(
-        "deltacast_source",
-        Arg("rdma") = use_rdma,
+        "deltacast_source", Arg("rdma") = use_rdma,
         Arg("board") = from_config("deltacast.board").as<uint32_t>(),
-        Arg("input") = from_config("deltacast.input").as<uint32_t>(),
-        Arg("width") = width,
+        Arg("input") = from_config("deltacast.input").as<uint32_t>(), Arg("width") = width,
         Arg("height") = height,
         Arg("progressive") = from_config("deltacast.progressive").as<bool>(),
         Arg("framerate") = from_config("deltacast.framerate").as<uint32_t>());
 
     auto drop_alpha_channel_converter = make_operator<ops::FormatConverterOp>(
-            "drop_alpha_channel_converter",
-            from_config("drop_alpha_channel_converter"),
-            Arg("pool") =
-                make_resource<BlockMemoryPool>("pool", 1, source_block_size, source_num_blocks));
+        "drop_alpha_channel_converter", from_config("drop_alpha_channel_converter"),
+        Arg("pool") =
+            make_resource<BlockMemoryPool>("pool", 1, source_block_size, source_num_blocks));
 
     // Format converter to prepare for visualization
-    auto format_converter =
-        make_operator<ops::FormatConverterOp>("format_converter",
-                                              from_config("format_converter"),
-                                              Arg("pool") = make_resource<BlockMemoryPool>(
-                                                  "converter_pool", 1, source_block_size,
-                                                  source_num_blocks));
+    auto format_converter = make_operator<ops::FormatConverterOp>(
+        "format_converter", from_config("format_converter"),
+        Arg("pool") = make_resource<BlockMemoryPool>("converter_pool", 1, source_block_size,
+                                                     source_num_blocks));
 
     auto visualizer = make_operator<ops::HolovizOp>(
-        "holoviz",
-        from_config("holoviz"),
+        "holoviz", from_config("holoviz"),
         Arg("allocator") = make_resource<UnboundedAllocator>("holoviz_allocator"));
 
     // Connect the pipeline: source -> format_converter -> holoviz
@@ -74,10 +68,7 @@ class App : public holoscan::Application {
 /** Helper function to parse the command line arguments */
 bool parse_arguments(int argc, char** argv, std::string& config_name) {
   static struct option long_options[] = {
-      {"config",  required_argument, 0,  'c' },
-      {"help",    no_argument,       0,  'h' },
-      {0,         0,                 0,  0 }
-  };
+      {"config", required_argument, 0, 'c'}, {"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
 
   int c;
   while ((c = getopt_long(argc, argv, "c:h", long_options, NULL)) != -1 && c != '?') {
