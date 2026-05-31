@@ -59,7 +59,7 @@ endif()
 
 option(VIDEOMASTER_USE_MOCK
     "Use the bundled VideoMasterHD mock instead of the real SDK (enables builds and demo runs without hardware)"
-    ON)
+    OFF)
 
 set(_use_mock TRUE)
 set(_found_via_config FALSE)
