@@ -14,6 +14,7 @@ holoscan-deltacast/
 ├── CMakeLists.txt                  # Root CMake — orchestrates operators/applications/tests
 ├── pyproject.toml                  # Python packaging metadata (scikit-build-core)
 ├── metadata.json                   # Module-level metadata (schema: urn:holohub:module:v2)
+├── cmake/                          # Vendored holoscan-cli CMake helpers + mock VideoMaster SDK
 ├── operators/
 │   └── deltacast_videomaster/
 │       ├── *.cpp / *.hpp           # Operator implementation
@@ -24,8 +25,8 @@ holoscan-deltacast/
 ├── python/holoscan/deltacast/
 │   └── __init__.py                 # Re-exports operators for `from holoscan.deltacast import ...`
 └── tests/
-    ├── cpp/                        # GTest suite
-    └── python/                     # pytest suite
+    ├── cpp/                        # GTest suite (operator construction)
+    └── python/                     # pytest suite (operator imports)
 ```
 
 ---
@@ -68,6 +69,20 @@ cmake -S . -B build -DBUILD_ALL=ON -DHOLOSCAN_DELTACAST_BUILD_TESTING=ON
 cmake --build build -j"$(nproc)"
 ```
 
+### CMake options
+
+| Option | Default | Effect |
+|---|---|---|
+| `BUILD_ALL` | `ON` standalone, parent's value when nested | Build every operator and application (the CLI sets `APP_<name>` / `OP_<name>` instead) |
+| `HOLOSCAN_DELTACAST_BUILD_TESTING` | `ON` standalone, `OFF` when nested in a parent project | Add `tests/` and the per-application CTest entries |
+| `HOLOSCAN_DELTACAST_DOWNLOAD_DATA` | `ON` standalone, `OFF` when nested in a parent project | Download the endoscopy sample data for `deltacast_transmitter` into `HOLOHUB_DATA_DIR` (default `<repo>/data`) |
+| `VIDEOMASTER_USE_MOCK` | `ON` | Link the bundled mock VideoMaster SDK |
+| `VIDEOMASTER_SDK_DIR` | unset | Path to a real VideoMaster SDK (with `VIDEOMASTER_USE_MOCK=OFF`) |
+
+Python bindings are staged in `build/python/lib/holoscan/deltacast/`, the directory the CLI adds
+to `PYTHONPATH` for `holoscan run` and `holoscan test`. Holoscan SDK 4.6 extends the `holoscan`
+package path, so no import-path workaround is needed in application code.
+
 Run C++ tests:
 
 ```bash
@@ -82,7 +97,7 @@ PYTHONPATH=build/python/lib${PYTHONPATH:+:$PYTHONPATH} \
 pytest tests/python/ -v
 ```
 
-`PYTHONPATH` is **prepended**, not replaced — if the holoscan SDK is on `PYTHONPATH` in your shell, the form above keeps it visible. Replacing the variable (a bare `PYTHONPATH=build/python/lib`) silently drops the SDK, the module-level `importorskip("holoscan")` fires, and pytest exits with code 5 (no tests collected).
+`PYTHONPATH` is **prepended**, not replaced — if the holoscan SDK is on `PYTHONPATH` in your shell, the form above keeps it visible. Replacing the variable (a bare `PYTHONPATH=build/python/lib`) silently drops the SDK, the module-level `importorskip("holoscan.core")` fires, and pytest exits with code 5 (no tests collected).
 
 ---
 
@@ -120,6 +135,26 @@ cmake -S . -B build-real \
     -DVIDEOMASTER_SDK_DIR=/path/to/videomaster-sdk \
     -DVIDEOMASTER_USE_MOCK=OFF
 ```
+
+---
+
+## Vendored CMake helpers
+
+`cmake/HoloHubConfigHelpers.cmake`, `cmake/pybind11_add_holohub_module.cmake`,
+`cmake/holohub_configure_deb.cmake`, `cmake/pydoc/` and `cmake/pybind11/__init__.py.in` are copied
+from the pinned `holoscan-cli` package, so the project builds without the CLI installed. When bumping
+`requirements-cli.txt`, refresh them from `holoscan_cli/cmake/` in the installed package.
+
+Local change to keep when refreshing: `cmake/pybind11/__init__.py.in` imports `@MODULE_CLASS_NAME@`
+by name, because `CLASS_NAME` here lists two operators (`"VideoMasterSourceOp, VideoMasterTransmitterOp"`)
+and the upstream 5.0.0a2 template only handles a single class.
+
+## Dev container
+
+The `Dockerfile` builds on `nvcr.io/nvidia/clara-holoscan/holoscan:v4.6.0-cuda13` and installs
+`requirements-cli.txt`, the NGC CLI, GTest, clang-format and pytest. It also runs
+`chmod -R a+rX /opt/nvidia/holoscan/bin`: the SDK 4.6 image ships `download_ngc_data` and the
+video conversion scripts as root-only, while the CLI runs the container as the host user.
 
 ---
 

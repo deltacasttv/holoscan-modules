@@ -19,12 +19,13 @@ holoscan build deltacast_receiver --language cpp --local \
 
 `VIDEOMASTER_SDK_DIR` is optional. Use it only when the SDK is installed in a non-default location. For the full SDK detection order and examples, see the top-level [DELTACAST.TV VideoMaster SDK](../../README.md#deltacasttv-videomaster-sdk) section.
 
-Once built, run the binaries from the build directory:
+Once built, run from the repository root (`build/` is the CMake build directory):
 
 ```bash
 # C++
-./applications/deltacast_receiver/cpp/deltacast_receiver
+./build/applications/deltacast_receiver/cpp/deltacast_receiver
 
-# Python
-python3 applications/deltacast_receiver/python/deltacast_receiver.py
+# Python (bindings are staged in build/python/lib)
+PYTHONPATH=build/python/lib${PYTHONPATH:+:$PYTHONPATH} \
+  python3 applications/deltacast_receiver/python/deltacast_receiver.py
 ```

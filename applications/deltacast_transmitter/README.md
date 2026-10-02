@@ -54,10 +54,14 @@ holoscan build deltacast_transmitter --language cpp --local \
 
 ## Run
 
+From the repository root (`build/` is the CMake build directory; the sample data is downloaded
+to `data/endoscopy` by default):
+
 ```bash
 # C++
-./applications/deltacast_transmitter/cpp/deltacast_transmitter --data <build>/data/endoscopy
+./build/applications/deltacast_transmitter/cpp/deltacast_transmitter --data data/endoscopy
 
-# Python (from the build dir, `data/endoscopy` is the default)
-python3 applications/deltacast_transmitter/python/deltacast_transmitter.py
+# Python (bindings are staged in build/python/lib; `data/endoscopy` is the default --data_path)
+PYTHONPATH=build/python/lib${PYTHONPATH:+:$PYTHONPATH} \
+  python3 applications/deltacast_transmitter/python/deltacast_transmitter.py
 ```

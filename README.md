@@ -101,6 +101,9 @@ holoscan build deltacast_receiver --language cpp
 holoscan run deltacast_[transmitter/receiver] --language [cpp/python]
 ```
 
+On a host without an NVIDIA GPU or NVIDIA Container Toolkit, add `--docker-opts="--runtime runc"`
+to build and test commands. Running the applications still requires a GPU.
+
 ### Without Holoscan CLI
 
 | Requirement | Version |
@@ -118,6 +121,9 @@ The Deltacast VideoMaster SDK is also required to target real hardware — conta
 cmake -S . -B build -DBUILD_ALL=ON -DHOLOSCAN_DELTACAST_BUILD_TESTING=ON
 cmake --build build -j$(nproc)
 ```
+
+Python bindings are staged in `build/python/lib/holoscan/deltacast/`. See [DEVELOPER.md](DEVELOPER.md#cmake-options)
+for CMake options and their defaults.
 
 ---
 
@@ -162,10 +168,13 @@ In that case, set `VIDEOMASTER_SDK_DIR=path/to/VideoMasterSDK`.
 holoscan test
 ```
 
+`holoscan test` configures a fresh build in `build-<project>/` and downloads data to
+`data-<project>-<tag>/` in the repository root (both are git-ignored).
+
 Or, without the Holoscan CLI:
 
 ```bash
-# C++ (GTest via CTest)
+# C++ (GTest via CTest); use `-L python` for the pytest entry, or omit -L for both
 ctest --test-dir build --output-on-failure -L unit
 ```
 
