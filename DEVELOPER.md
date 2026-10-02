@@ -9,11 +9,11 @@ distributing this Holoscan Module.
 
 ```
 holoscan-deltacast/
-├── holohub                         # CLI wrapper (delegates to HoloHub CLI)
+├── requirements-cli.txt            # Tested holoscan-cli version pin
 ├── Dockerfile                      # Dev container image
 ├── CMakeLists.txt                  # Root CMake — orchestrates operators/applications/tests
 ├── pyproject.toml                  # Python packaging metadata (scikit-build-core)
-├── metadata.json                   # Module-level metadata (schema: holoscan/module/v2)
+├── metadata.json                   # Module-level metadata (schema: urn:holohub:module:v2)
 ├── operators/
 │   └── deltacast_videomaster/
 │       ├── *.cpp / *.hpp           # Operator implementation
@@ -30,23 +30,38 @@ holoscan-deltacast/
 
 ---
 
-## `holohub` wrapper commands
+## Holoscan CLI commands
 
-The `holohub` script at the module root wraps the HoloHub CLI with
-module-specific defaults. On first run it downloads the CLI tools via sparse-checkout
-into `.holohub/` (internet required; subsequent runs use the cached copy). Set
-`CLI_FORCE_UPDATE=1` to re-download (e.g. after bumping `CLI_PINNED_COMMIT`).
+Install the pinned CLI into a Python 3.11+ environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install \
+  --extra-index-url https://pypi.nvidia.com \
+  -r requirements-cli.txt
+```
+
+The dev `Dockerfile` installs the same pin into the container image. After changing
+`requirements-cli.txt` (keep `[dependency-groups].dev` in `pyproject.toml` in sync), reinstall
+the requirements and rebuild the image.
 
 | Command | What it does |
 |---|---|
-| `./holohub run-container` | Build and start the dev container |
-| `./holohub build deltacast_receiver` | CMake configure + build inside the container |
-| `./holohub run deltacast_receiver` | Run the receiver example |
-| `./holohub run deltacast_transmitter` | Run the transmitter example |
+| `holoscan run-container` | Build and start the dev container |
+| `holoscan build deltacast_receiver --language cpp` | CMake configure + build inside the container |
+| `holoscan run deltacast_receiver --language cpp` | Run the C++ receiver example |
+| `holoscan run deltacast_transmitter --language python` | Run the Python transmitter example |
+| `holoscan test` | Run CTest (C++ unit tests) and pytest |
+| `holoscan install --dev` | Install a `.pth` hook for live module imports in the current Python environment |
+
+Both applications have C++ and Python variants; pass `--language` explicitly, since the CLI
+defaults to Python. On a machine without an NVIDIA GPU / container toolkit, add
+`--docker-opts="--runtime runc"` to build-only commands.
 
 ---
 
-## Building without the wrapper
+## Building without the CLI
 
 ```bash
 cmake -S . -B build -DBUILD_ALL=ON -DHOLOSCAN_DELTACAST_BUILD_TESTING=ON
@@ -63,11 +78,11 @@ Run Python tests:
 
 ```bash
 HOLOSCAN_DELTACAST_BUILD_DIR=build \
-PYTHONPATH=build/python:$PYTHONPATH \
+PYTHONPATH=build/python/lib${PYTHONPATH:+:$PYTHONPATH} \
 pytest tests/python/ -v
 ```
 
-`PYTHONPATH` is **prepended**, not replaced — if the holoscan SDK is on `PYTHONPATH` in your shell, the form above keeps it visible. Replacing the variable (a bare `PYTHONPATH=build/python`) silently drops the SDK, the module-level `importorskip("holoscan")` fires, and pytest exits with code 5 (no tests collected).
+`PYTHONPATH` is **prepended**, not replaced — if the holoscan SDK is on `PYTHONPATH` in your shell, the form above keeps it visible. Replacing the variable (a bare `PYTHONPATH=build/python/lib`) silently drops the SDK, the module-level `importorskip("holoscan")` fires, and pytest exits with code 5 (no tests collected).
 
 ---
 
@@ -144,6 +159,7 @@ python -m build --wheel
 
 ## Further reading
 
+- [Holoscan CLI documentation](https://github.com/nvidia-holoscan/holoscan-cli)
 - [HoloHub documentation](https://github.com/nvidia-holoscan/holohub)
 - [Holoscan SDK documentation](https://docs.nvidia.com/holoscan/sdk-user-guide/)
 - [Holoscan Module ecosystem](https://nvidia-holoscan.github.io/)

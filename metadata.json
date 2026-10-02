@@ -1,5 +1,5 @@
 {
-  "$schema": "holoscan/module/v2",
+  "$schema": "urn:holohub:module:v2",
   "module": {
     "name": "holoscan-deltacast",
     "version": "0.1.0",
@@ -21,15 +21,21 @@
       "python": "holoscan.deltacast"
     },
     "holoscan_sdk": {
-      "minimum_required_version": "4.2.0",
-      "tested_versions": ["4.2.0"]
+      "minimum_required_version": "4.6.0",
+      "tested_versions": ["4.6.0"]
     },
     "platforms": ["x86_64", "aarch64"],
     "tags": ["Video", "Deltacast", "Camera", "RDMA", "GPUDirect", "SDI", "HDMI"],
     "source_repository": "https://github.com/deltacasttv/holoscan-deltacast",
+    "operator_names": ["VideoMasterSourceOp", "VideoMasterTransmitterOp"],
+    "sensor_hardware": ["Deltacast VideoMaster"],
+    "dockerfile": "Dockerfile",
     "binary_packages": {
       "debian": "holoscan-deltacast",
       "pypi": "holoscan-deltacast"
+    },
+    "documentation": {
+      "readme": "README.md"
     },
     "testing": {
       "cpp": "ctest",

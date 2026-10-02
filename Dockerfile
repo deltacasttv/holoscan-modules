@@ -7,23 +7,32 @@
 #
 # Extends the Holoscan SDK image with the build tools needed to configure,
 # compile, and test the module from a live source mount. No source is copied
-# into the image; the project tree is bind-mounted by the HoloHub CLI at
+# into the image; the project tree is bind-mounted by the Holoscan CLI at
 # /workspace/deltacast when the container is launched.
 #
-# Build & run via the HoloHub CLI (recommended):
-#   ./holohub run-container
+# Build & run via the installed Holoscan CLI (recommended):
+#   holoscan run-container
 #
 # Manual build (without the CLI):
 #   docker build -t holoscan-deltacast .
 
-ARG BASE_IMAGE=nvcr.io/nvidia/clara-holoscan/holoscan:v4.2.0-cuda13-dgpu
+ARG BASE_IMAGE=nvcr.io/nvidia/clara-holoscan/holoscan:v4.6.0-cuda13
 FROM ${BASE_IMAGE}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# wget + unzip back the NGC CLI install below (matching HoloHub CLI's tool choice).
-# ffmpeg is invoked by cmake/holohub_download_data.cmake to decode the .264
-# endoscopy sample into raw RGB frames piped into convert_video_to_gxf_entities.py.
+# Install the exact CLI pin. holoscan-cli has no runtime dependencies, so
+# this adds nothing else to the image.
+COPY requirements-cli.txt /tmp/requirements-cli.txt
+RUN python3 -m pip install --no-cache-dir \
+        --extra-index-url https://pypi.nvidia.com \
+        -r /tmp/requirements-cli.txt \
+    && holoscan version
+
+# wget + unzip back the NGC CLI install below.
+# ffmpeg is invoked by the SDK's download_ngc_data script (see
+# cmake/holohub_download_data.cmake) to decode the .264 endoscopy sample into
+# raw RGB frames piped into convert_video_to_gxf_entities.py.
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         libgtest-dev \
@@ -34,11 +43,14 @@ RUN apt-get update \
         ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# NGC CLI for the endoscopy_data target in CMakeLists.txt. The `ngcsdk` PyPI
-# package is a Python SDK only — the `ngc` shell command ships in a separate
-# standalone zip hosted on NGC itself. URL/version/wget recipe matches HoloHub
-# CLI's setup_ngc_cli() (utilities/cli/util.py); HoloHub itself installs this
-# on-demand at runtime, we just pre-bake it into the image.
+# The SDK 4.6 image ships its helper scripts (download_ngc_data,
+# convert_video_to_gxf_entities.py, ...) as root-only (0700). The CLI runs the
+# container as the host user, so make them readable and executable.
+RUN chmod -R a+rX /opt/nvidia/holoscan/bin
+
+# NGC CLI for the endoscopy_data target in applications/CMakeLists.txt. The
+# `ngcsdk` PyPI package is a Python SDK only — the `ngc` shell command ships in
+# a separate standalone zip hosted on NGC itself.
 ARG NGC_CLI_VERSION=4.18.0
 RUN ARCH_SUFFIX=$([ "$(uname -m)" = "aarch64" ] && echo arm64 || echo linux) \
     && wget --quiet --content-disposition \
@@ -50,7 +62,7 @@ RUN ARCH_SUFFIX=$([ "$(uname -m)" = "aarch64" ] && echo arm64 || echo linux) \
     && rm /tmp/ngc.zip \
     && ngc --version
 
-# Python tooling:
-#   pytest-timeout            — test harness
-#   build + scikit-build-core — wheel packaging via `./holohub package --pkg-generator WHEEL`
-RUN pip install --no-cache-dir pytest-timeout build scikit-build-core
+# Test and wheel-build tooling. Must be in the same interpreter the CLI runs
+# on: build and package pass it to CMake as Python3_EXECUTABLE.
+RUN python3 -m pip install --no-cache-dir \
+        'pytest>=8.2' pytest-timeout build scikit-build-core

@@ -21,6 +21,12 @@ jobs:
       - run: pip install ruff
       - name: Python lint
         run: ruff check .
+      - name: Validate metadata.json against the Holoscan CLI schema
+        env:
+          PIP_EXTRA_INDEX_URL: https://pypi.nvidia.com
+        run: |
+          pip install 'holoscan-cli[create]' -c requirements-cli.txt
+          python .github/workflows/scripts/validate_metadata.py
 
       - name: Install clang-format
         run: sudo apt-get update && sudo apt-get install -y clang-format

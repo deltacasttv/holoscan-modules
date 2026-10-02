@@ -13,7 +13,7 @@ A mock library is provided for testing purposes in the event that a capture card
 See [Building from Source](../../README.md#building-from-source) in the top-level README. To link against the real VideoMaster SDK (in place of the bundled mock):
 
 ```bash
-./holohub build --local deltacast_receiver \
+holoscan build deltacast_receiver --language cpp --local \
     --configure-args="-DVIDEOMASTER_USE_MOCK=OFF -DVIDEOMASTER_SDK_DIR=<path to VideoMaster SDK>"
 ```
 

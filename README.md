@@ -12,16 +12,26 @@ The operators in this module target the **DELTACAST.TV** Videomaster capture car
 
 ## Quick Start
 
+Create and activate a Python (3.11+) virtual environment, then install the exact
+[Holoscan CLI](https://github.com/nvidia-holoscan/holoscan-cli) version pinned by this module:
+
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install \
+  --extra-index-url https://pypi.nvidia.com \
+  -r requirements-cli.txt
+
 # Run the C++ receiver pipeline
-./holohub run deltacast_receiver
+holoscan run deltacast_receiver --language cpp
 
 # Run the Python receiver pipeline
-./holohub run deltacast_receiver --language python
+holoscan run deltacast_receiver --language python
 ```
 
-This project uses the [NVIDIA HoloHub CLI](https://github.com/nvidia-holoscan/holohub) to streamline developer build and run commands.
-See `./holohub list` for more details.
+Both applications ship C++ and Python variants; without `--language`, the CLI defaults to Python.
+If you use [uv](https://docs.astral.sh/uv/), prefix the same commands with `uv run` instead
+(for example `uv run holoscan list`). See `holoscan list` for all applications and operators.
 
 ---
 
@@ -82,29 +92,30 @@ int main() { holoscan::make_application<MyApp>()->run(); }
 
 ## Building from Source
 
-### With HoloHub CLI (Recommended)
+### With Holoscan CLI (Recommended)
 
-Run the following command to build operators and run examples in the project container:
+Build the dev container image, then build operators and run examples inside it:
 
 ```bash
-./holohub run deltacast_[transmitter/receiver]
+holoscan build deltacast_receiver --language cpp
+holoscan run deltacast_[transmitter/receiver] --language [cpp/python]
 ```
 
-### Without HoloHub CLI
+### Without Holoscan CLI
 
 | Requirement | Version |
 |---|---|
-| Holoscan SDK | ≥ 4.2.0 |
-| CUDA Toolkit | 13.x (matches the Holoscan SDK CUDA pin; the dev `Dockerfile` uses `cuda13-dgpu`) |
+| Holoscan SDK | ≥ 4.6.0 |
+| CUDA Toolkit | 13.x (matches the Holoscan SDK CUDA pin; the dev `Dockerfile` uses `cuda13`) |
 | CMake | ≥ 3.24 |
 | C++ compiler | C++17 (GCC 11+) |
 | pybind11 | ≥ 2.11 |
-| Python | 3.10–3.13 |
+| Python | ≥ 3.11 |
 
 The Deltacast VideoMaster SDK is also required to target real hardware — contact DELTACAST.TV for access. The build links the bundled mock SDK by default, so the cmake command below succeeds without it.
 
 ```bash
-cmake -S . -B build
+cmake -S . -B build -DBUILD_ALL=ON -DHOLOSCAN_DELTACAST_BUILD_TESTING=ON
 cmake --build build -j$(nproc)
 ```
 
@@ -148,10 +159,10 @@ In that case, set `VIDEOMASTER_SDK_DIR=path/to/VideoMasterSDK`.
 ## Testing
 
 ```bash
-./holohub test
+holoscan test
 ```
 
-Or, without the HoloHub CLI:
+Or, without the Holoscan CLI:
 
 ```bash
 # C++ (GTest via CTest)
@@ -160,11 +171,11 @@ ctest --test-dir build --output-on-failure -L unit
 
 ```bash
 # Python (pytest)
-PYTHONPATH=build/python:$PYTHONPATH HOLOSCAN_DELTACAST_BUILD_DIR=build pytest tests/python/ -v
+PYTHONPATH=build/python/lib${PYTHONPATH:+:$PYTHONPATH} HOLOSCAN_DELTACAST_BUILD_DIR=build pytest tests/python/ -v
 ```
 
 `PYTHONPATH` is **prepended** so that an ambient holoscan SDK install stays
-visible. A bare `PYTHONPATH=build/python` would replace the variable and hide
+visible. A bare `PYTHONPATH=build/python/lib` would replace the variable and hide
 the SDK from pytest.
 
 Both suites currently cover importability and build-smoke only; full live-pipeline coverage is a TODO and requires real hardware. CTest is configured with `SKIP_RETURN_CODE 5` on the pytest entry — if a CTest run reports "Skipped" unexpectedly, the most common cause is that the holoscan SDK is not importable in the test environment (pytest collects zero items and exits 5).

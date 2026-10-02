@@ -1,9 +1,10 @@
-# CMake build artifacts
+# CMake build artifacts (build-<project>/ is created by `holoscan test`)
 build/
+/build-*/
 .cmake/
 
-# HoloHub CLI tools (auto-downloaded by the holohub wrapper on first run)
-.holohub/
+# Caller-owned Python environments
+.venv/
 
 # Container HOME-mapped junk (dev container sets HOME=/workspace/deltacast)
 .local/
@@ -16,6 +17,7 @@ build/
 
 # Fetched test data (downloaded by the endoscopy_data CMake target)
 data/
+/data-*/
 
 # Python packaging artifacts
 dist/

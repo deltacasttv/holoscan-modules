@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2024-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,11 +17,12 @@ function(holohub_configure_deb)
   # parse args
   set(options)
   set(requiredArgs NAME DESCRIPTION VERSION VENDOR CONTACT DEPENDS)
-  list(APPEND oneValueArgs ${requiredArgs} SECTION PRIORITY RECOMMENDS SUGGESTS)
-  set(multiValueArgs COMPONENTS EXPORT_NAME)
+  list(APPEND oneValueArgs ${requiredArgs} SECTION PRIORITY RECOMMENDS SUGGESTS EXPORT_NAME)
+  set(multiValueArgs COMPONENTS)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGV})
 
   # validate required args
+  set(missingArgs "")
   foreach(arg ${requiredArgs})
     if(NOT ARG_${arg})
       list(APPEND missingArgs ${arg})
@@ -47,8 +48,8 @@ function(holohub_configure_deb)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "${ARG_DEPENDS}")
   set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "${ARG_RECOMMENDS}")
   set(CPACK_DEBIAN_PACKAGE_SUGGESTS "${ARG_SUGGESTS}")
-  set(CPACK_PACKAGE_SECTION "${ARG_SECTION}")
-  set(CPACK_PACKAGE_PRIORITY "${ARG_PRIORITY}")
+  set(CPACK_DEBIAN_PACKAGE_SECTION "${ARG_SECTION}")
+  set(CPACK_DEBIAN_PACKAGE_PRIORITY "${ARG_PRIORITY}")
 
   if(ARG_EXPORT_NAME)
     set(config_install_dir "lib/cmake/${ARG_NAME}")
@@ -66,7 +67,6 @@ function(holohub_configure_deb)
       "${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}Config.cmake"
       INSTALL_DESTINATION ${config_install_dir}
       NO_SET_AND_CHECK_MACRO
-      NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
     write_basic_package_version_file(
       "${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake"
@@ -86,7 +86,10 @@ function(holohub_configure_deb)
     # only packages installed components, in a single package
     set(CPACK_DEB_COMPONENT_INSTALL 1)
     set(CPACK_ARCHIVE_COMPONENT_INSTALL 1)
-    set(CPACK_COMPONENTS_ALL "${ARG_COMPONENTS};${export_component}") # TODO: check if components are valid?
+    set(CPACK_COMPONENTS_ALL "${ARG_COMPONENTS}")
+    if(export_component)
+      list(APPEND CPACK_COMPONENTS_ALL "${export_component}")
+    endif()
     set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
   else()
     # package all installed targets

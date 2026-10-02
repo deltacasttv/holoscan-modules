@@ -20,8 +20,8 @@ This application additionally needs:
 `cmake --build` runs the `endoscopy_data` target defined at
 `applications/CMakeLists.txt` via `holoscan_download_data()` (see
 [`cmake/holohub_download_data.cmake`](../../cmake/holohub_download_data.cmake)).
-The CMake helper invokes the HoloHub `download_ngc_data` bash script — vendored
-into `.holohub/utilities/` by the wrapper bootstrap — which:
+The CMake helper invokes the Holoscan SDK `download_ngc_data` bash script —
+shipped in `<holoscan SDK>/bin` (`/opt/nvidia/holoscan/bin` in the dev container) — which:
 
 1. Fetches [holoscan_endoscopy_sample_data:20230222](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/clara-holoscan/resources/holoscan_endoscopy_sample_data)
    from NGC into `${HOLOHUB_DATA_DIR}/endoscopy/`.
@@ -31,12 +31,14 @@ into `.holohub/utilities/` by the wrapper bootstrap — which:
    `VideoStreamReplayerOp` consumes.
 
 Output lands at `<HOLOHUB_DATA_DIR>/endoscopy/` (default `<module>/data/endoscopy/` when
-run via `./holohub`, or `<build>/data/endoscopy/` for a plain CMake build). Disable with
-`-DHOLOSCAN_DELTACAST_DOWNLOAD_DATA=OFF` and supply your own:
+run via `holoscan`, or `<build>/data/endoscopy/` for a plain CMake build). Disable with
+`-DHOLOSCAN_DELTACAST_DOWNLOAD_DATA=OFF` and supply your own. The download is ON by default
+only for standalone builds; it defaults OFF when this module is nested in a parent project
+such as HoloHub.
 
 ```bash
-./holohub run deltacast_transmitter -- --data /path/to/endoscopy            # C++
-./holohub run deltacast_transmitter --language python -- --data_path /path  # Python
+holoscan run deltacast_transmitter --language cpp --run-args="--data /path/to/endoscopy"
+holoscan run deltacast_transmitter --language python --run-args="--data_path /path/to/endoscopy"
 ```
 
 ## Build
@@ -44,7 +46,7 @@ run via `./holohub`, or `<build>/data/endoscopy/` for a plain CMake build). Disa
 See [Building from Source](../../README.md#building-from-source) in the top-level README. To link against the real VideoMaster SDK (in place of the bundled mock):
 
 ```bash
-./holohub build --local deltacast_transmitter \
+holoscan build deltacast_transmitter --language cpp --local \
    --configure-args="-DVIDEOMASTER_USE_MOCK=OFF -DVIDEOMASTER_SDK_DIR=<path to VideoMaster SDK>"
 ```
 
