@@ -12,8 +12,17 @@ The operators in this module target the **DELTACAST.TV** Videomaster capture car
 
 ## Quick Start
 
-Create and activate a Python (3.11+) virtual environment, then install the exact
-[Holoscan CLI](https://github.com/nvidia-holoscan/holoscan-cli) version pinned by this module:
+This module is driven by the standalone [Holoscan CLI](https://github.com/nvidia-holoscan/holoscan-cli)
+(`holoscan` command). The tested version is pinned in [`requirements-cli.txt`](requirements-cli.txt)
+(currently `holoscan-cli==5.0.0a2`, published on `https://pypi.nvidia.com`).
+
+### Get the Holoscan CLI
+
+Host requirements: Python 3.11–3.14, plus Docker with the
+[NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/) for
+container builds and runs.
+
+With `pip`, create and activate a virtual environment, then install the pinned CLI:
 
 ```bash
 python3 -m venv .venv
@@ -21,17 +30,40 @@ source .venv/bin/activate
 python -m pip install \
   --extra-index-url https://pypi.nvidia.com \
   -r requirements-cli.txt
+holoscan version
+```
 
-# Run the C++ receiver pipeline
-holoscan run deltacast_receiver --language cpp
+With [uv](https://docs.astral.sh/uv/), no separate environment setup or activation is needed:
+the `dev` dependency group in `pyproject.toml` pins the same CLI version. Prefix commands with
+`uv run`:
 
-# Run the Python receiver pipeline
-holoscan run deltacast_receiver --language python
+```bash
+uv run holoscan version
+```
+
+To move to a newer CLI, update `requirements-cli.txt` and `[dependency-groups].dev` in
+`pyproject.toml` together, reinstall, and rebuild the dev container (`holoscan build-container`).
+
+### Use the Holoscan CLI
+
+Run commands from the repository root. Builds and runs happen in the dev container from
+[`Dockerfile`](Dockerfile) (Holoscan SDK 4.6) by default; add `--local` to use a host SDK instead.
+
+```bash
+holoscan list                                         # discover applications and operators
+holoscan run deltacast_receiver --language cpp        # build + run the C++ receiver
+holoscan run deltacast_receiver --language python     # build + run the Python receiver
+holoscan build deltacast_transmitter --language cpp   # build only
+holoscan test                                         # CTest + pytest in the dev container
+holoscan run-container                                # interactive shell in the dev container
 ```
 
 Both applications ship C++ and Python variants; without `--language`, the CLI defaults to Python.
-If you use [uv](https://docs.astral.sh/uv/), prefix the same commands with `uv run` instead
-(for example `uv run holoscan list`). See `holoscan list` for all applications and operators.
+Add `--dryrun` to print the Docker and CMake commands without running them. On a host without an
+NVIDIA GPU, add `--docker-opts="--runtime runc"` to build and test commands; running the
+applications still requires a GPU. See the
+[CLI reference](https://github.com/nvidia-holoscan/holoscan-cli/blob/main/CLI_REFERENCE.md) or
+`holoscan <command> --help` for all commands and options.
 
 ---
 
@@ -94,15 +126,13 @@ int main() { holoscan::make_application<MyApp>()->run(); }
 
 ### With Holoscan CLI (Recommended)
 
-Build the dev container image, then build operators and run examples inside it:
+Install the CLI as described in [Get the Holoscan CLI](#get-the-holoscan-cli), then build the
+operators and run the examples in the dev container:
 
 ```bash
 holoscan build deltacast_receiver --language cpp
 holoscan run deltacast_[transmitter/receiver] --language [cpp/python]
 ```
-
-On a host without an NVIDIA GPU or NVIDIA Container Toolkit, add `--docker-opts="--runtime runc"`
-to build and test commands. Running the applications still requires a GPU.
 
 ### Without Holoscan CLI
 

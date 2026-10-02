@@ -33,22 +33,17 @@ holoscan-deltacast/
 
 ## Holoscan CLI commands
 
-Install the pinned CLI into a Python 3.11+ environment:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install \
-  --extra-index-url https://pypi.nvidia.com \
-  -r requirements-cli.txt
-```
+Install the pinned CLI (`requirements-cli.txt`) into a Python 3.11–3.14 environment with `pip`, or
+use `uv run holoscan ...` — see [Get the Holoscan CLI](README.md#get-the-holoscan-cli).
 
 The dev `Dockerfile` installs the same pin into the container image. After changing
 `requirements-cli.txt` (keep `[dependency-groups].dev` in `pyproject.toml` in sync), reinstall
-the requirements and rebuild the image.
+the requirements and rebuild the image with `holoscan build-container`.
 
 | Command | What it does |
 |---|---|
+| `holoscan list` | List the module, operators and applications the CLI discovers |
+| `holoscan build-container` | Build the dev container image from `Dockerfile` |
 | `holoscan run-container` | Build and start the dev container |
 | `holoscan build deltacast_receiver --language cpp` | CMake configure + build inside the container |
 | `holoscan run deltacast_receiver --language cpp` | Run the C++ receiver example |
@@ -57,8 +52,9 @@ the requirements and rebuild the image.
 | `holoscan install --dev` | Install a `.pth` hook for live module imports in the current Python environment |
 
 Both applications have C++ and Python variants; pass `--language` explicitly, since the CLI
-defaults to Python. On a machine without an NVIDIA GPU / container toolkit, add
-`--docker-opts="--runtime runc"` to build-only commands.
+defaults to Python. Add `--dryrun` to preview the Docker and CMake commands, and `--local` to build
+against a host SDK instead of the container. On a machine without an NVIDIA GPU / container toolkit,
+add `--docker-opts="--runtime runc"` to build and test commands.
 
 ---
 
