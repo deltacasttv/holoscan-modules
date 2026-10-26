@@ -58,7 +58,7 @@ See [Building from Source](../../README.md#building-from-source) in the top-leve
 
 ## Tests
 
-Hardware validation last performed with the DELTACAST VideoMaster SDK `6.32`. The Holoscan SDK column was updated to reflect the current minimum-required version (see [`metadata.json`](metadata.json)); these scenarios should be re-validated whenever the Holoscan SDK pin moves.
+Hardware validation last performed with the DELTACAST VideoMaster SDK `6.32` and Holoscan SDK 4.2. The minimum-required Holoscan SDK is now 4.6 (see [`metadata.json`](metadata.json)); these scenarios have not yet been re-validated on 4.6 hardware.
 
 | Application             | Device                  | Configuration                       | Holoscan SDK 4.2 |
 | ----------------------- | ----------------------- | ----------------------------------- | ---------------- |

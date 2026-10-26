@@ -10,8 +10,11 @@ add_holohub_application(deltacast_transmitter DEPENDS OPERATORS deltacast_videom
 # ─────────────────────────────────────────────────────────────────────────────
 # Sample data fetch — holoscan_endoscopy_sample_data
 # ─────────────────────────────────────────────────────────────────────────────
+# Default ON only for standalone builds so a parent project (e.g. HoloHub)
+# doesn't fetch the sample data unless it opts in.
 option(HOLOSCAN_DELTACAST_DOWNLOAD_DATA
-       "Download holoscan_endoscopy_sample_data for the deltacast_transmitter demo" ON)
+       "Download holoscan_endoscopy_sample_data for the deltacast_transmitter demo"
+       ${PROJECT_IS_TOP_LEVEL})
 
 if(HOLOSCAN_DELTACAST_DOWNLOAD_DATA)
     if(NOT DEFINED HOLOHUB_DATA_DIR)
@@ -19,9 +22,9 @@ if(HOLOSCAN_DELTACAST_DOWNLOAD_DATA)
             CACHE PATH "Directory for downloaded sample data")
     endif()
 
-    # holoscan_download_data() wraps the HoloHub `download_ngc_data` bash script
-    # (resolved via find_program; ships in .holohub/utilities/ after
-    # ./holohub bootstrap, or at /opt/nvidia/holoscan/bin in an SDK install).
+    # holoscan_download_data() wraps the Holoscan SDK `download_ngc_data` bash
+    # script (resolved via find_program; ships in <holoscan SDK>/bin, e.g.
+    # /opt/nvidia/holoscan/bin in the SDK container).
     # The script handles the NGC fetch and the ffmpeg → convert_video_to_gxf_entities
     # transcode internally, so no inline shell-pipe gymnastics here.
     include(holohub_download_data)

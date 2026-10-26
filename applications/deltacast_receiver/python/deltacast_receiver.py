@@ -17,18 +17,10 @@ import os
 import sys
 from argparse import ArgumentParser
 
-# Workaround for strict import path in "holoscan<=4.2".
-# Splice the build-tree holoscan/ into holoscan.__path__ so
-# `import holoscan.deltacast` resolves.
-import holoscan
-
-_build_holoscan_path = os.path.join(os.environ.get("HOLOSCAN_DELTACAST_BUILD_DIR",''), "python", "holoscan")
-holoscan.__path__.insert(0, _build_holoscan_path)
-
-from holoscan.core import Application  # noqa: E402
-from holoscan.deltacast import VideoMasterSourceOp  # noqa: E402
-from holoscan.operators import FormatConverterOp, HolovizOp  # noqa: E402
-from holoscan.resources import BlockMemoryPool, MemoryStorageType, UnboundedAllocator  # noqa: E402
+from holoscan.core import Application
+from holoscan.deltacast import VideoMasterSourceOp
+from holoscan.operators import FormatConverterOp, HolovizOp
+from holoscan.resources import BlockMemoryPool, MemoryStorageType, UnboundedAllocator
 
 
 class DeltacastReceiverApp(Application):

@@ -14,8 +14,8 @@ if(HOLOSCAN_DELTACAST_BUILD_TESTING)
     PASS_REGULAR_EXPRESSION "Running the graph;"
     FAIL_REGULAR_EXPRESSION "[^a-z]Error;ERROR;Failed")
 
-  set_property(TEST deltacast_receiver_python_test PROPERTY ENVIRONMENT
-    "PYTHONPATH=${DELTACAST_PYTHON_ROOT}")
+  set_property(TEST deltacast_receiver_python_test PROPERTY ENVIRONMENT_MODIFICATION
+    "PYTHONPATH=path_list_prepend:${HOLOSCAN_DELTACAST_PYTHON_ROOT}")
 endif()
 
 install(FILES deltacast_receiver.py deltacast_receiver.yaml

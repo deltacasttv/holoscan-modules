@@ -69,7 +69,7 @@ function(holoscan_download_data dataname)
     NAMES download_ngc_data
     PATHS
         ${CMAKE_SOURCE_DIR}/utilities
-        ${CMAKE_SOURCE_DIR}/.holohub/utilities
+        ${holoscan_DIR}/../../../bin
         /opt/nvidia/holoscan/bin
     NO_DEFAULT_PATH
     REQUIRED

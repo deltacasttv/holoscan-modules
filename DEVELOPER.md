@@ -9,11 +9,12 @@ distributing this Holoscan Module.
 
 ```
 holoscan-deltacast/
-├── holohub                         # CLI wrapper (delegates to HoloHub CLI)
+├── requirements-cli.txt            # Tested holoscan-cli version pin
 ├── Dockerfile                      # Dev container image
 ├── CMakeLists.txt                  # Root CMake — orchestrates operators/applications/tests
 ├── pyproject.toml                  # Python packaging metadata (scikit-build-core)
-├── metadata.json                   # Module-level metadata (schema: holoscan/module/v2)
+├── metadata.json                   # Module-level metadata (schema: urn:holohub:module:v2)
+├── cmake/                          # Vendored holoscan-cli CMake helpers + mock VideoMaster SDK
 ├── operators/
 │   └── deltacast_videomaster/
 │       ├── *.cpp / *.hpp           # Operator implementation
@@ -24,34 +25,59 @@ holoscan-deltacast/
 ├── python/holoscan/deltacast/
 │   └── __init__.py                 # Re-exports operators for `from holoscan.deltacast import ...`
 └── tests/
-    ├── cpp/                        # GTest suite
-    └── python/                     # pytest suite
+    ├── cpp/                        # GTest suite (operator construction)
+    └── python/                     # pytest suite (operator imports)
 ```
 
 ---
 
-## `holohub` wrapper commands
+## Holoscan CLI commands
 
-The `holohub` script at the module root wraps the HoloHub CLI with
-module-specific defaults. On first run it downloads the CLI tools via sparse-checkout
-into `.holohub/` (internet required; subsequent runs use the cached copy). Set
-`CLI_FORCE_UPDATE=1` to re-download (e.g. after bumping `CLI_PINNED_COMMIT`).
+Install the pinned CLI (`requirements-cli.txt`) into a Python 3.11–3.14 environment with `pip`, or
+use `uv run holoscan ...` — see [Get the Holoscan CLI](README.md#get-the-holoscan-cli).
+
+The dev `Dockerfile` installs the same pin into the container image. After changing
+`requirements-cli.txt` (keep `[dependency-groups].dev` in `pyproject.toml` in sync), reinstall
+the requirements and rebuild the image with `holoscan build-container`.
 
 | Command | What it does |
 |---|---|
-| `./holohub run-container` | Build and start the dev container |
-| `./holohub build deltacast_receiver` | CMake configure + build inside the container |
-| `./holohub run deltacast_receiver` | Run the receiver example |
-| `./holohub run deltacast_transmitter` | Run the transmitter example |
+| `holoscan list` | List the module, operators and applications the CLI discovers |
+| `holoscan build-container` | Build the dev container image from `Dockerfile` |
+| `holoscan run-container` | Build and start the dev container |
+| `holoscan build deltacast_receiver --language cpp` | CMake configure + build inside the container |
+| `holoscan run deltacast_receiver --language cpp` | Run the C++ receiver example |
+| `holoscan run deltacast_transmitter --language python` | Run the Python transmitter example |
+| `holoscan test` | Run CTest (C++ unit tests) and pytest |
+| `holoscan install --dev` | Install a `.pth` hook for live module imports in the current Python environment |
+
+Both applications have C++ and Python variants; pass `--language` explicitly, since the CLI
+defaults to Python. Add `--dryrun` to preview the Docker and CMake commands, and `--local` to build
+against a host SDK instead of the container. On a machine without an NVIDIA GPU / container toolkit,
+add `--docker-opts="--runtime runc"` to build and test commands.
 
 ---
 
-## Building without the wrapper
+## Building without the CLI
 
 ```bash
 cmake -S . -B build -DBUILD_ALL=ON -DHOLOSCAN_DELTACAST_BUILD_TESTING=ON
 cmake --build build -j"$(nproc)"
 ```
+
+### CMake options
+
+| Option | Default | Effect |
+|---|---|---|
+| `BUILD_ALL` | `ON` standalone, parent's value when nested | Build every operator and application (the CLI sets `APP_<name>` / `OP_<name>` instead) |
+| `HOLOSCAN_DELTACAST_BUILD_TESTING` | `ON` standalone, `OFF` when nested in a parent project | Add `tests/` and the per-application CTest entries |
+| `HOLOSCAN_DELTACAST_DOWNLOAD_DATA` | `ON` standalone, `OFF` when nested in a parent project | Download the endoscopy sample data for `deltacast_transmitter` into `HOLOHUB_DATA_DIR` (default `<repo>/data`) |
+| `VIDEOMASTER_USE_MOCK` | `ON` | Link the bundled mock VideoMaster SDK |
+| `VIDEOMASTER_SDK_DIR` | unset | Path to a real VideoMaster SDK (with `VIDEOMASTER_USE_MOCK=OFF`) |
+
+Python bindings are staged in `build/python/lib/holoscan/deltacast/`, the directory the CLI adds
+to `PYTHONPATH` for `holoscan run` and `holoscan test`. Holoscan SDK 4.6 extends the `holoscan`
+package path, so no import-path workaround is needed in application code.
 
 Run C++ tests:
 
@@ -63,11 +89,11 @@ Run Python tests:
 
 ```bash
 HOLOSCAN_DELTACAST_BUILD_DIR=build \
-PYTHONPATH=build/python:$PYTHONPATH \
+PYTHONPATH=build/python/lib${PYTHONPATH:+:$PYTHONPATH} \
 pytest tests/python/ -v
 ```
 
-`PYTHONPATH` is **prepended**, not replaced — if the holoscan SDK is on `PYTHONPATH` in your shell, the form above keeps it visible. Replacing the variable (a bare `PYTHONPATH=build/python`) silently drops the SDK, the module-level `importorskip("holoscan")` fires, and pytest exits with code 5 (no tests collected).
+`PYTHONPATH` is **prepended**, not replaced — if the holoscan SDK is on `PYTHONPATH` in your shell, the form above keeps it visible. Replacing the variable (a bare `PYTHONPATH=build/python/lib`) silently drops the SDK, the module-level `importorskip("holoscan.core")` fires, and pytest exits with code 5 (no tests collected).
 
 ---
 
@@ -108,6 +134,26 @@ cmake -S . -B build-real \
 
 ---
 
+## Vendored CMake helpers
+
+`cmake/HoloHubConfigHelpers.cmake`, `cmake/pybind11_add_holohub_module.cmake`,
+`cmake/holohub_configure_deb.cmake`, `cmake/pydoc/` and `cmake/pybind11/__init__.py.in` are copied
+from the pinned `holoscan-cli` package, so the project builds without the CLI installed. When bumping
+`requirements-cli.txt`, refresh them from `holoscan_cli/cmake/` in the installed package.
+
+Local change to keep when refreshing: `cmake/pybind11/__init__.py.in` imports `@MODULE_CLASS_NAME@`
+by name, because `CLASS_NAME` here lists two operators (`"VideoMasterSourceOp, VideoMasterTransmitterOp"`)
+and the upstream 5.0.0a2 template only handles a single class.
+
+## Dev container
+
+The `Dockerfile` builds on `nvcr.io/nvidia/clara-holoscan/holoscan:v4.6.0-cuda13` and installs
+`requirements-cli.txt`, the NGC CLI, GTest, clang-format and pytest. It also runs
+`chmod -R a+rX /opt/nvidia/holoscan/bin`: the SDK 4.6 image ships `download_ngc_data` and the
+video conversion scripts as root-only, while the CLI runs the container as the host user.
+
+---
+
 ## `pyproject.toml`
 
 `pyproject.toml` configures [scikit-build-core](https://scikit-build-core.readthedocs.io/) for
@@ -144,6 +190,7 @@ python -m build --wheel
 
 ## Further reading
 
+- [Holoscan CLI documentation](https://github.com/nvidia-holoscan/holoscan-cli)
 - [HoloHub documentation](https://github.com/nvidia-holoscan/holohub)
 - [Holoscan SDK documentation](https://docs.nvidia.com/holoscan/sdk-user-guide/)
 - [Holoscan Module ecosystem](https://nvidia-holoscan.github.io/)
