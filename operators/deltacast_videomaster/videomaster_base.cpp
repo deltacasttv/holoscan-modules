@@ -170,7 +170,11 @@ bool VideoMasterBase::open_stream() {
     case VHD_CHNTYPE_12GSDI:
       video_information = std::make_unique<Deltacast::Helper::SdiVideoInformation>();
       break;
-    case VHD_CHNTYPE_HDMI:
+    case VHD_CHNTYPE_HDMI_TMDS:
+    case VHD_CHNTYPE_HDMI_FRL3:
+    case VHD_CHNTYPE_HDMI_FRL4:
+    case VHD_CHNTYPE_HDMI_FRL5:
+    case VHD_CHNTYPE_HDMI_FRL6:
     case VHD_CHNTYPE_DISPLAYPORT:
       video_information = std::make_unique<Deltacast::Helper::DvVideoInformation>();
       break;
