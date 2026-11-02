@@ -5,6 +5,7 @@ build/
 
 # Caller-owned Python environments
 .venv/
+uv.lock
 
 # Container HOME-mapped junk (dev container sets HOME=/workspace/deltacast)
 .local/
@@ -14,6 +15,12 @@ build/
 .python_history
 .ngc/
 .nv/
+.claude/
+.dotnet/
+.gnupg/
+.redhat/
+.ssh/
+.claude.json
 
 # Fetched test data (downloaded by the endoscopy_data CMake target)
 data/
@@ -27,5 +34,7 @@ __pycache__/
 
 # Editor / IDE
 .vscode/
+.vscode-server/
 .idea/
 *.swp
+.gitconfig
